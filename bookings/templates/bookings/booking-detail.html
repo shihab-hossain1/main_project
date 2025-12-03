@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Booking #{{ booking.id }} – Details</title>
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
+  <style>
+    .detail-wrap{padding:2rem 0}
+    .detail-card{max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:var(--shadow-soft)}
+    .detail-row{display:flex;justify-content:space-between;margin-bottom:.5rem}
+    .detail-label{font-weight:600;color:var(--muted);}
+    .detail-value{font-weight:500;}
+    .detail-actions{display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo">
+          <div class="logo-icon">💊</div>
+          <span class="logo-text">DiagnoCare</span>
+        </div>
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="{% url 'home' %}">Home</a>
+          <button class="btn btn-outline" onclick="history.back()">Back</button>
+          <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container detail-wrap">
+    <div class="detail-card">
+      <h1 class="page-title">Booking #BK-{{ booking.id }}</h1>
+      <p class="section-description">Test details and collection information.</p>
+
+      <div class="detail-row">
+        <span class="detail-label">Test</span>
+        <span class="detail-value">{{ booking.test }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Patient Name</span>
+        <span class="detail-value">{{ booking.name }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Phone</span>
+        <span class="detail-value">{{ booking.phone }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">{{ booking.email|default:"—" }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Date &amp; Time</span>
+        <span class="detail-value">{{ booking.date }} {{ booking.time }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Type</span>
+        <span class="detail-value">
+          {% if booking.type == 'home' %}
+            Home Collection
+          {% else %}
+            At Center
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Center</span>
+        <span class="detail-value">{{ booking.center|default:"—" }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="detail-label">Address</span>
+        <span class="detail-value">
+          {{ booking.address|default:"" }} {{ booking.city|default:"" }} {{ booking.postcode|default:"" }}
+        </span>
+      </div>
+
+      {% if booking.notes %}
+      <div class="detail-row">
+        <span class="detail-label">Notes</span>
+        <span class="detail-value">{{ booking.notes }}</span>
+      </div>
+      {% endif %}
+
+      <div class="detail-actions">
+        <!-- Details page already shows everything. This button simulates report download. -->
+<a class="btn btn-primary"
+   href="{% static 'bookings/WM17S.pdf' %}"
+   target="_blank">
+  Download Sample Report
+</a>
+
+      </div>
+    </div>
+  </main>
+</body>
+</html>

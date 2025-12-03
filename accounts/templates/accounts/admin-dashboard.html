@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Admin Dashboard — DiagnoCare</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dash-wrap{padding:2rem 0}
+    .dash-header{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .dash-title{font-size:1.75rem;font-weight:700}
+    .dash-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+    .cards{display:grid;gap:1rem;grid-template-columns:1fr}
+    @media(min-width:768px){.cards{grid-template-columns:repeat(3,1fr)}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow-soft)}
+    .card h3{font-size:1rem;margin-bottom:.5rem}
+    .metric{font-size:2rem;font-weight:700;color:var(--primary)}
+    .section{margin-top:2rem}
+    .list{display:grid;gap:.75rem}
+    .list-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:10px;padding:.75rem;background:var(--background)}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo"><div class="logo-icon">💊</div><span class="logo-text">DiagnoCare</span></div>
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="index-vanilla.html">Home</a>
+          <!--<button id="logoutAdmin" class="btn btn-primary">Logout</button>-->
+          <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
+  Logout
+</button>
+
+        
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container dash-wrap">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Admin Dashboard</div>
+        <p class="section-description">System overview, users & centers management</p>
+      </div>
+      <div class="dash-actions">
+        <a class="btn btn-primary" href="#">Add Center</a>
+        <a class="btn btn-outline" href="#">Invite Admin</a>
+        <a class="btn btn-outline" href="#">System Settings</a>
+      </div>
+    </div>
+
+    <section class="cards">
+      <div class="card">
+        <h3>Total Users</h3>
+        <div class="metric">5,214</div>
+        <p class="test-description">+124 this week</p>
+      </div>
+      <div class="card">
+        <h3>Active Centers</h3>
+        <div class="metric">112</div>
+        <p class="test-description">3 pending approvals</p>
+      </div>
+      <div class="card">
+        <h3>Today’s Orders</h3>
+        <div class="metric">276</div>
+        <p class="test-description">Avg. TAT: 14h</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Recent Activity</h2>
+      <div class="list">
+        <div class="list-item"><span>Center “Care Point” approved</span><a class="btn btn-ghost" href="#">View</a></div>
+        <div class="list-item"><span>Admin role granted to <strong>lab.ops@diagno</strong></span><a class="btn btn-ghost" href="#">View</a></div>
+        <div class="list-item"><span>Pricing updated for Lipid Profile</span><a class="btn btn-ghost" href="#">View</a></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('logoutAdmin').addEventListener('click',()=>{
+      localStorage.removeItem('diagnocare_role');
+      location.href='login.html';
+    });
+  </script>
+</body>
+</html>

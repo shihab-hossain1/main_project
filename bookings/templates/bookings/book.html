@@ -1,0 +1,231 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book a Test — DiagnoCare</title>
+  
+<link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
+
+  <style>
+    .page { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    .grid .full { grid-column: 1 / -1; }
+    form label { display:block; font-weight:600; margin-top:8px; }
+    input, select, textarea { width:100%; padding:10px; border:1px solid #e3e3e3; border-radius:8px; }
+    fieldset { border:1px solid #eee; border-radius:12px; padding:12px; margin:12px 0; }
+    .inline { display:inline-flex; align-items:center; gap:8px; margin-right:16px; }
+    .btn { padding:10px 16px; border-radius:10px; border:0; cursor:pointer; }
+    .btn-primary { background:#2563eb; color:#fff; }
+    .btn-ghost { background:#f5f5f5; }
+    .status { margin-top:10px; font-size:0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a href="{% url 'home' %}" class="btn btn-ghost">← Back to Home</a>
+    <h1>Book a Test</h1>
+    <p>Fill in the details below and we’ll confirm your booking.</p>
+
+    <form id="booking-form">
+      <!-- Contact -->
+      <div class="grid">
+        <label>
+          Full Name
+          <input type="text" name="name" placeholder="Your full name" required />
+        </label>
+
+        <label>
+          Phone
+          <input type="tel" name="phone" placeholder="e.g., 01XXXXXXXXX" required />
+        </label>
+
+        <label class="full">
+          Email (optional)
+          <input type="email" name="email" placeholder="you@example.com" />
+        </label>
+      </div>
+
+      <!-- What / When -->
+      <div class="grid">
+        <label class="full">
+          Select Test
+          <select name="test" id="test-select" required>
+            <option value="" disabled selected>Choose a test</option>
+            <option value="CBC">CBC (Complete Blood Count)</option>
+            <option value="Lipid Profile">Lipid Profile</option>
+            <option value="Blood Sugar (FBS)">Blood Sugar (FBS)</option>
+            <option value="Thyroid Panel">Thyroid Panel</option>
+            <option value="Liver Function Test">Liver Function Test</option>
+            <option value="COVID-19 RT-PCR">COVID-19 RT-PCR</option>
+            <option value="Kidney Function Test (KFT)">Kidney Function Test</option>
+            <option value="ECG (Electrocardiogram)">ECG (Electrocardiogram)</option>
+            <option value="Vitamin D Test">Vitamin D Test</option>
+          </select>
+        </label>
+
+        <label>
+          Preferred Date
+          <input type="date" name="date" required />
+        </label>
+
+        <label>
+          Preferred Time
+          <input type="time" name="time" required />
+        </label>
+      </div>
+
+      <!-- Where -->
+      <fieldset>
+        <legend>Collection Type</legend>
+        <label class="inline">
+          <input type="radio" name="type" value="center" checked />
+          Visit Diagnostic Center
+        </label>
+        <label class="inline">
+          <input type="radio" name="type" value="home" />
+          Home Collection
+        </label>
+      </fieldset>
+
+      <div id="center-fields" class="grid">
+        <label class="full">
+          Choose Center
+          <select name="center">
+            <option value="Center 1">Epic Health Care</option>
+            <option value="Center 2">Ibne Sina Katalgonj</option>
+            <option value="Center 3">Parkview Hospital</option>
+            <option value="Center 4">Care Point</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="home-fields" class="grid" style="display:none">
+        <label class="full">
+          Address Line
+          <input type="text" name="address" placeholder="House, Road, Area" />
+        </label>
+        <label>
+          City
+          <input type="text" name="city" value="Dhaka" />
+        </label>
+        <label>
+          Postcode
+          <input type="text" name="postcode" />
+        </label>
+      </div>
+
+      <label class="full">
+        Notes (optional)
+        <textarea name="notes" rows="3" placeholder="Any special instructions"></textarea>
+      </label>
+
+      <button type="submit" class="btn btn-primary">Confirm Booking</button>
+      <p id="booking-status" class="status" aria-live="polite"></p>
+    </form>
+  </div>
+
+  <script>
+    // --- Utilities
+    function qs(sel, root=document){ return root.querySelector(sel); }
+    function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+    // Prefill test from URL, e.g. book.html?test=CBC
+    (function prefillFromQuery(){
+      const params = new URLSearchParams(location.search);
+      const t = params.get('test');
+      if (t) { const sel = qs('#test-select'); if (sel) sel.value = t; }
+    })();
+
+    // Set min date = today (Asia/Dhaka local; simple client-side)
+    (function setMinDate(){
+      const input = qs('input[name="date"]');
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      if (input) input.min = `${yyyy}-${mm}-${dd}`;
+    })();
+
+    // Toggle center/home fields + required rules
+    (function toggleCollectionType(){
+      const form = qs('#booking-form');
+      const centerFields = qs('#center-fields');
+      const homeFields = qs('#home-fields');
+      function update(){
+        const isHome = form.type.value === 'home';
+        homeFields.style.display = isHome ? 'grid' : 'none';
+        centerFields.style.display = isHome ? 'none' : 'grid';
+        if (form.address) form.address.required = isHome;
+        if (form.center) form.center.required = !isHome;
+      }
+      qsa('input[name="type"]').forEach(r => r.addEventListener('change', update));
+      update();
+    })();
+
+    
+    // Simple BD phone check
+function validBDPhone(p){ 
+  return /^01\d{9}$/.test((p || '').replace(/\s+/g, '')); 
+}
+
+
+    // Submit (no backend yet: localStorage demo; replace with fetch when ready)
+    (function handleSubmit(){
+      const form = qs('#booking-form');
+      const statusEl = qs('#booking-status');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        statusEl.textContent = '';
+
+        if (!validBDPhone(form.phone.value)) {
+          statusEl.textContent = 'Please enter a valid Bangladeshi phone (e.g., 01XXXXXXXXX).';
+          return;
+        }
+
+        const payload = {
+          name: form.name.value.trim(),
+          phone: form.phone.value.trim(),
+          email: form.email.value.trim(),
+          test: form.test.value,
+          date: form.date.value,
+          time: form.time.value,
+          type: form.type.value,
+          center: form.center?.value || null,
+          address: form.address?.value || null,
+          city: form.city?.value || null,
+          postcode: form.postcode?.value || null,
+          notes: form.notes.value.trim(),
+          createdAt: new Date().toISOString()
+        };
+
+        try {
+  const res = await fetch('http://127.0.0.1:8000/api/bookings/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error('Network error');
+  }
+
+  const data = await res.json();
+  console.log('Saved booking id:', data.id);
+
+  statusEl.textContent = '✅ Booking received! We’ll contact you shortly.';
+  form.reset();
+} catch (err) {
+  console.error(err);
+  statusEl.textContent = '❌ Something went wrong. Please try again.';
+}
+
+      });
+    })();
+  </script>
+</body>
+</html>

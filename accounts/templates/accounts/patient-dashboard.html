@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Patient Dashboard — DiagnoCare</title>
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}" />
+  <style>
+    .dash-wrap{padding:2rem 0}
+    .dash-header{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .dash-title{font-size:1.75rem;font-weight:700}
+    .dash-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+    .cards{display:grid;gap:1rem;grid-template-columns:1fr}
+    @media(min-width:768px){.cards{grid-template-columns:repeat(3,1fr)}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow-soft)}
+    .card h3{font-size:1rem;margin-bottom:.5rem}
+    .metric{font-size:2rem;font-weight:700;color:var(--primary)}
+    .section{margin-top:2rem}
+    .list{display:grid;gap:.75rem}
+    .list-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:10px;padding:.75rem;background:var(--background)}
+    .pill{font-size:.75rem;border:1px solid var(--border);padding:.15rem .5rem;border-radius:9999px}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo">
+          <div class="logo-icon">💊</div>
+          <span class="logo-text">DiagnoCare</span>
+        </div>
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="{% url 'home' %}">Home</a>
+          <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container dash-wrap">
+    <!-- Header (similar layout to center dashboard) -->
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">
+          Patient Dashboard
+        </div>
+        <p class="section-description">
+          Welcome, {{ request.user.first_name|default:request.user.username }} —
+          manage your tests, collections and reports in one place.
+        </p>
+      </div>
+
+      <div class="dash-actions">
+        <a class="btn btn-primary" href="/book/">Book a Test</a>
+        <a class="btn btn-outline" href="#">Find Centers</a>
+        <a class="btn btn-outline" href="#">View Packages</a>
+      </div>
+    </div>
+
+    <!-- KPI Cards (same style as center dashboard) -->
+    <section class="cards">
+      <div class="card">
+        <h3>Upcoming Bookings</h3>
+        <div class="metric">
+          {{ bookings|length }}
+        </div>
+        <p class="test-description">
+          Total bookings linked to your account
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Next Collection</h3>
+        <div class="metric">
+          {% if bookings %}
+            {{ bookings.0.date|default:"—" }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+        <p class="test-description">
+          {% if bookings %}
+            {{ bookings.0.time|default:"" }} 
+            {% if bookings.0.type == 'home' %}
+              — Home collection
+            {% else %}
+              — At center
+            {% endif %}
+          {% else %}
+            No upcoming collection scheduled
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Your Profile</h3>
+        <div class="metric">
+          {{ request.user.username }}
+        </div>
+        <p class="test-description">
+          Logged in as patient
+        </p>
+      </div>
+    </section>
+
+    <!-- Bookings list (similar to Today’s Orders on center dashboard) -->
+    <section class="section">
+  <h2 class="section-title">Your Bookings</h2>
+
+  {% if bookings %}
+    <div class="list">
+      {% for b in bookings %}
+        <div class="list-item">
+          <span>
+            {{ b.test }} — #BK-{{ b.id }} — {{ b.date }}
+          </span>
+          <span>
+            <span class="pill">
+              {{ b.time }}
+              {% if b.type == 'home' %}
+                • Home Collection
+              {% else %}
+                • At Center
+              {% endif %}
+            </span>
+            <a class="btn btn-ghost" href="{% url 'booking-detail' b.id %}">Details</a>
+            {% load static %}
+<a class="btn btn-primary"
+   href="{% static 'bookings/WM17S.pdf' %}"
+   target="_blank">
+  Download
+</a>
+
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="section-description">No bookings found for your account yet. Click “Book a Test” to get started.</p>
+  {% endif %}
+</section>
+
+  </main>
+</body>
+</html>

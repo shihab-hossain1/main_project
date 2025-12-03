@@ -1,0 +1,179 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Sign Up - DiagnoCare</title>
+  <meta name="description" content="Login or sign up to DiagnoCare to book lab tests and manage your health records">
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
+
+</head>
+<body>
+  <!-- Auth Container -->
+  <div class="auth-page">
+    <div class="auth-container">
+      <a href="{% url 'home' %}" class="back-link">
+        <svg class="back-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </a>
+
+
+      <div class="auth-layout">
+        <!-- Left branding / text -->
+        <div class="auth-sidebar">
+          <div class="login-brand">
+    <div class="login-brand-icon">💊</div>
+    <div class="login-brand-text">
+        <div class="login-brand-title">DiagnoCare</div>
+        <div class="login-brand-subtitle">Smart Lab Booking & Reports</div>
+    </div>
+</div>
+
+ 
+
+         
+
+       </div>
+
+        <!-- Right auth card -->
+        <div class="auth-main">
+          <!-- Tabs -->
+          <div class="auth-tabs">
+        <div class="tabs-list">
+          <button class="tab-trigger active" data-tab="login">Login</button>
+          <button class="tab-trigger" data-tab="signup">Sign Up</button>
+        </div>
+          <!-- Login Tab Content -->
+          <div class="tab-content active" id="login-tab">
+            <div class="auth-card">
+              <div class="card-header">
+                <h2 class="card-title">Welcome Back</h2>
+                <p class="card-description">Select your category and enter your credentials</p>
+              </div>
+
+              {% if error %}
+                <p style="color:red; margin-bottom:8px;">{{ error }}</p>
+              {% endif %}
+
+              <form id="login-form" class="auth-form" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                <!-- single hidden input used by JS -->
+                <input type="hidden" id="login-role" name="login-role" value="patient">
+
+                <!-- Role cards (single selector) -->
+                <div class="role-cards" role="radiogroup" aria-label="Login category">
+                  <button type="button" class="role-card selected patient-card" data-role="patient" aria-pressed="true">
+                    <div class="role-icon">🧑‍⚕️</div>
+                    <div class="role-title">Patient</div>
+                    <div class="role-hint">Book tests & view reports</div>
+                  </button>
+
+                  <button type="button" class="role-card center-card" data-role="center" aria-pressed="false">
+                    <div class="role-icon">🏥</div>
+                    <div class="role-title">Center</div>
+                    <div class="role-hint">Manage orders & results</div>
+                  </button>
+
+                  <button type="button" class="role-card admin-card" data-role="admin" aria-pressed="false">
+                    <div class="role-icon">🛠️</div>
+                    <div class="role-title">Admin</div>
+                    <div class="role-hint">Users, centers, settings</div>
+                  </button>
+                </div>
+
+                <p class="form-hint">Choose your role to sign in.</p>
+
+                <div class="form-group">
+                  <label for="login-email" class="form-label">Username</label>
+                  <input 
+                    type="text" 
+                    id="login-email" 
+                    name="login-email"
+                    class="form-input" 
+                    placeholder="Enter your username"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="login-password" class="form-label">Password</label>
+                  <input 
+                    type="password" 
+                    id="login-password" 
+                    name="login-password"
+                    class="form-input" 
+                    placeholder="Enter your password"
+                    required
+                  >
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Sign Up Tab Content -->
+          <div class="tab-content" id="signup-tab">
+            <div class="auth-card">
+              <div class="card-header">
+                <h2 class="card-title">Create Account</h2>
+                <p class="card-description">Sign up to book tests and manage your health records</p>
+              </div>
+
+              {% if signup_error %}
+                <p style="color:red; margin-bottom:8px;">{{ signup_error }}</p>
+              {% endif %}
+
+              <form id="signup-form" class="auth-form" method="post" action="{% url 'signup' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label for="signup-name" class="form-label">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="signup-name" 
+                    name="signup-name"
+                    class="form-input" 
+                    placeholder="John Doe"
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="signup-username" class="form-label">Username</label>
+                  <input 
+                    type="text" 
+                    id="signup-username" 
+                    name="signup-username"
+                    class="form-input" 
+                    placeholder="Choose a unique username"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="signup-password" class="form-label">Password</label>
+                  <input 
+                    type="password" 
+                    id="signup-password" 
+                    name="signup-password"
+                    class="form-input" 
+                    placeholder="Create a strong password"
+                    required
+                  >
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+              </form>
+            </div>
+          </div>
+        </div> <!-- auth-main -->
+      </div> <!-- auth-layout -->
+    </div> <!-- auth-container -->
+  </div> <!-- auth-page -->
+
+  <script src="{% static 'accounts/log.js' %}"></script>
+</body>
+</html>

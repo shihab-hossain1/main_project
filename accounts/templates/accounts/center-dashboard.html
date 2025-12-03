@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Center Dashboard — DiagnoCare</title>
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}" />
+
+  <style>
+    .dash-wrap{padding:2rem 0}
+    .dash-header{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .dash-title{font-size:1.75rem;font-weight:700}
+    .dash-actions{display:flex;gap:.75rem;flex-wrap:wrap}
+    .cards{display:grid;gap:1rem;grid-template-columns:1fr}
+    @media(min-width:768px){.cards{grid-template-columns:repeat(3,1fr)}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:var(--shadow-soft)}
+    .card h3{font-size:1rem;margin-bottom:.5rem}
+    .metric{font-size:2rem;font-weight:700;color:var(--primary)}
+    .section{margin-top:2rem}
+    .list{display:grid;gap:.75rem}
+    .list-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:10px;padding:.75rem;background:var(--background)}
+    .pill{font-size:.75rem;border:1px solid var(--border);padding:.15rem .5rem;border-radius:9999px}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo"><div class="logo-icon">💊</div><span class="logo-text">DiagnoCare</span></div>
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="index-vanilla.html">Home</a>
+          <!--<button id="logoutCenter" class="btn btn-primary">Logout</button>-->
+          
+        <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
+  Logout
+</button>
+
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container dash-wrap">
+    <div class="dash-header">
+      <div>
+  <div class="dash-title">Center Dashboard</div>
+  <p class="section-description">
+    Welcome, {{ request.user.username }} — {{ profile.center_name }}
+  </p>
+</div>
+
+      <div class="dash-actions">
+        <a class="btn btn-primary" href="#">Create Order</a>
+        <a class="btn btn-outline" href="#">Schedule Collection</a>
+        <a class="btn btn-outline" href="#">Upload Report</a>
+      </div>
+    </div>
+
+    <section class="cards">
+  <div class="card">
+    <h3>Today’s Bookings</h3>
+    <div class="metric">{{ today_count }}</div>
+    <p class="test-description">Bookings scheduled for today</p>
+  </div>
+
+  <div class="card">
+    <h3>Total Bookings</h3>
+    <div class="metric">{{ total_count }}</div>
+    <p class="test-description">All bookings for {{ profile.center_name }}</p>
+  </div>
+
+  <div class="card">
+    <h3>Home / Center</h3>
+    <div class="metric">{{ home_count }}/{{ center_count }}</div>
+    <p class="test-description">Home collection vs at center</p>
+  </div>
+</section>
+
+
+    <section class="section">
+  <h2 class="section-title">Today’s Orders</h2>
+
+  {% if bookings %}
+    <div class="list">
+      {% for b in bookings %}
+        <div class="list-item">
+          <span>
+            #BK-{{ b.id }} — {{ b.test }} —
+            <strong>{{ b.name }}</strong>
+          </span>
+          <span class="pill">
+            {{ b.date }} {{ b.time }}
+            {% if b.type == 'home' %}
+              • Home Collection
+            {% else %}
+              • At Center
+            {% endif %}
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="section-description">No bookings yet for today.</p>
+  {% endif %}
+</section>
+
+  </main>
+
+  
+</body>
+</html>
