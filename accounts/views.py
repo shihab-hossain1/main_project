@@ -7,6 +7,10 @@ from .models import Profile
 from django.utils import timezone
 from bookings.models import Booking
 from django.db.models import Q
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.db import IntegrityError
+import datetime
 
 
 def home(request):
@@ -70,13 +74,16 @@ def login_view(request):
     return render(request, 'accounts/login.html')
 
 
-
-
 def signup_view(request):
     if request.method == 'POST':
-        name = request.POST.get('signup-name', '').strip()
-        username = request.POST.get('signup-username', '').strip()  # user will log in with this
-        password = request.POST.get('signup-password', '').strip()
+        full_name = request.POST.get('signup-fullname', '').strip()
+        username  = request.POST.get('signup-username', '').strip()
+        email     = request.POST.get('signup-email', '').strip()
+        phone     = request.POST.get('signup-phone', '').strip()
+        gender    = request.POST.get('signup-gender', '')
+        dob_str   = request.POST.get('signup-dob', '')
+        password  = request.POST.get('signup-password', '')
+        confirm   = request.POST.get('signup-confirm', '')
 
         # Basic validation
         if not username or not password:
@@ -84,27 +91,54 @@ def signup_view(request):
                 'signup_error': 'Username and password are required.'
             })
 
+        if password != confirm:
+            return render(request, 'accounts/login.html', {
+                'signup_error': 'Passwords do not match.'
+            })
+
         if User.objects.filter(username=username).exists():
             return render(request, 'accounts/login.html', {
                 'signup_error': 'This username is already taken.'
             })
 
-        # Create user
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            first_name=name
+        # Convert DOB string to date (YYYY-MM-DD)
+        dob = None
+        if dob_str:
+            try:
+                dob = datetime.date.fromisoformat(dob_str)
+            except ValueError:
+                return render(request, 'accounts/login.html', {
+                    'signup_error': 'Invalid date of birth format.'
+                })
+
+        try:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                email=email,
+                first_name=full_name
+            )
+        except IntegrityError:
+            return render(request, 'accounts/login.html', {
+                'signup_error': 'Could not create user. Please try again.'
+            })
+
+        # Create profile as patient by default
+        Profile.objects.create(
+            user=user,
+            role='patient',
+            phone=phone,
+            gender=gender,
+            date_of_birth=dob
         )
 
-        # New signups are PATIENTS by default
-        Profile.objects.create(user=user, role='patient')
-
-        # Auto-login after signup
+        # Log them in and send to patient dashboard
         login(request, user)
         return redirect('patient-dashboard')
 
-    # If GET /signup, just show login page with signup block
+    # If GET, just go to login page
     return redirect('login')
+
 
 
 

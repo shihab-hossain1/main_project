@@ -62,7 +62,10 @@
                 {% csrf_token %}
 
                 <!-- single hidden input used by JS -->
+                <!-- single hidden input used by JS -->
                 <input type="hidden" id="login-role" name="login-role" value="patient">
+                
+
 
                 <!-- Role cards (single selector) -->
                 <div class="role-cards" role="radiogroup" aria-label="Login category">
@@ -128,45 +131,116 @@
                 <p style="color:red; margin-bottom:8px;">{{ signup_error }}</p>
               {% endif %}
 
-              <form id="signup-form" class="auth-form" method="post" action="{% url 'signup' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                  <label for="signup-name" class="form-label">Full Name</label>
-                  <input 
-                    type="text" 
-                    id="signup-name" 
-                    name="signup-name"
-                    class="form-input" 
-                    placeholder="John Doe"
-                  >
-                </div>
+    <form id="signup-form"
+      class="auth-form"
+      method="post"
+      action="{% url 'signup' %}">
+  {% csrf_token %}
 
-                <div class="form-group">
-                  <label for="signup-username" class="form-label">Username</label>
-                  <input 
-                    type="text" 
-                    id="signup-username" 
-                    name="signup-username"
-                    class="form-input" 
-                    placeholder="Choose a unique username"
-                    required
-                  >
-                </div>
+  <div class="form-group">
+    <label for="signup-fullname" class="form-label">Full Name</label>
+    <input
+      type="text"
+      id="signup-fullname"
+      name="signup-fullname"
+      class="form-input"
+      placeholder="Enter your full name"
+      required
+    >
+  </div>
 
-                <div class="form-group">
-                  <label for="signup-password" class="form-label">Password</label>
-                  <input 
-                    type="password" 
-                    id="signup-password" 
-                    name="signup-password"
-                    class="form-input" 
-                    placeholder="Create a strong password"
-                    required
-                  >
-                </div>
+  <div class="form-group">
+    <label for="signup-username" class="form-label">Username</label>
+    <input
+      type="text"
+      id="signup-username"
+      name="signup-username"
+      class="form-input"
+      placeholder="Choose a username"
+      required
+    >
+  </div>
 
-                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
-              </form>
+  <div class="form-group">
+    <label for="signup-email" class="form-label">Email Address</label>
+    <input
+      type="email"
+      id="signup-email"
+      name="signup-email"
+      class="form-input"
+      placeholder="your@email.com"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="signup-phone" class="form-label">Phone Number</label>
+    <input
+      type="tel"
+      id="signup-phone"
+      name="signup-phone"
+      class="form-input"
+      placeholder="01XXXXXXXXX"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="signup-gender" class="form-label">Gender</label>
+    <select
+      id="signup-gender"
+      name="signup-gender"
+      class="form-input"
+      required
+    >
+      <option value="" disabled selected>Select gender</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="signup-dob" class="form-label">Date of Birth</label>
+    <input
+      type="date"
+      id="signup-dob"
+      name="signup-dob"
+      class="form-input"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="signup-password" class="form-label">Password</label>
+    <input
+      type="password"
+      id="signup-password"
+      name="signup-password"
+      class="form-input"
+      placeholder="Enter password"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="signup-confirm" class="form-label">Confirm Password</label>
+    <input
+      type="password"
+      id="signup-confirm"
+      name="signup-confirm"
+      class="form-input"
+      placeholder="Re-enter password"
+      required
+    >
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">
+    Sign Up
+  </button>
+</form>
+
+
             </div>
           </div>
         </div> <!-- auth-main -->

@@ -32,7 +32,8 @@
         </div>
         <div class="nav-cta">
           <a class="btn btn-outline" href="{% url 'home' %}">Home</a>
-          <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
+          <!-- Django logout (no JS id needed) -->
+          <button class="btn btn-primary" onclick="window.location.href='{% url 'logout' %}'">
             Logout
           </button>
         </div>
@@ -41,7 +42,7 @@
   </nav>
 
   <main class="container dash-wrap">
-    <!-- Header (similar layout to center dashboard) -->
+    <!-- Header -->
     <div class="dash-header">
       <div>
         <div class="dash-title">
@@ -60,7 +61,7 @@
       </div>
     </div>
 
-    <!-- KPI Cards (same style as center dashboard) -->
+    <!-- KPI Cards -->
     <section class="cards">
       <div class="card">
         <h3>Upcoming Bookings</h3>
@@ -83,7 +84,7 @@
         </div>
         <p class="test-description">
           {% if bookings %}
-            {{ bookings.0.time|default:"" }} 
+            {{ bookings.0.time|default:"" }}
             {% if bookings.0.type == 'home' %}
               — Home collection
             {% else %}
@@ -106,43 +107,93 @@
       </div>
     </section>
 
-    <!-- Bookings list (similar to Today’s Orders on center dashboard) -->
+    <!-- Recent Reports (from localStorage, uploaded by center dashboard) -->
     <section class="section">
-  <h2 class="section-title">Your Bookings</h2>
+      <h2 class="section-title">Recent Reports</h2>
+      <div id="reportList" class="list"></div>
+    </section>
 
-  {% if bookings %}
-    <div class="list">
-      {% for b in bookings %}
-        <div class="list-item">
-          <span>
-            {{ b.test }} — #BK-{{ b.id }} — {{ b.date }}
-          </span>
-          <span>
-            <span class="pill">
-              {{ b.time }}
-              {% if b.type == 'home' %}
-                • Home Collection
-              {% else %}
-                • At Center
-              {% endif %}
-            </span>
-            <a class="btn btn-ghost" href="{% url 'booking-detail' b.id %}">Details</a>
-            {% load static %}
-<a class="btn btn-primary"
-   href="{% static 'bookings/WM17S.pdf' %}"
-   target="_blank">
-  Download
-</a>
+    <!-- Your Bookings (from Django DB) -->
+    <section class="section">
+      <h2 class="section-title">Your Bookings</h2>
 
-          </span>
+      {% if bookings %}
+        <div class="list">
+          {% for b in bookings %}
+            <div class="list-item">
+              <span>
+                {{ b.test }} — #BK-{{ b.id }} — {{ b.date }}
+              </span>
+              <span>
+                <span class="pill">
+                  {{ b.time }}
+                  {% if b.type == 'home' %}
+                    • Home Collection
+                  {% else %}
+                    • At Center
+                  {% endif %}
+                </span>
+                <a class="btn btn-ghost" href="{% url 'booking-detail' b.id %}">Details</a>
+
+                <!-- Example static server-side PDF download (demo) -->
+                <a class="btn btn-primary"
+                   href="{% static 'bookings/WM17S.pdf' %}"
+                   target="_blank">
+                  Download
+                </a>
+              </span>
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="section-description">No bookings found for your account yet. Click “Book a Test” to get started.</p>
-  {% endif %}
-</section>
-
+      {% else %}
+        <p class="section-description">
+          No bookings found for your account yet. Click “Book a Test” to get started.
+        </p>
+      {% endif %}
+    </section>
   </main>
+
+  <!-- Load reports stored in browser localStorage (from center dashboard uploads) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let reports = [];
+      try {
+        reports = JSON.parse(localStorage.getItem('reports') || '[]');
+      } catch (e) {
+        reports = [];
+      }
+
+      const reportList = document.getElementById('reportList');
+      if (!reportList) return;
+
+      if (!reports.length) {
+        reportList.innerHTML =
+          '<p class="section-description">No reports available yet.</p>';
+        return;
+      }
+
+      // Latest uploaded first
+      reports.sort(
+        (a, b) =>
+          new Date(b.uploadedAt || b.date || 0) -
+          new Date(a.uploadedAt || a.date || 0)
+      );
+
+      reportList.innerHTML = reports
+        .map((r, i) => `
+          <div class="list-item">
+            <span>
+              ${r.test || 'Test'} — ${r.date || ''}${r.bookingId ? ` — #BK-${r.bookingId}` : ''}
+            </span>
+            <a class="btn btn-primary"
+               href="${r.pdfUrl}"
+               download="report-${r.bookingId || i}.pdf">
+              Download
+            </a>
+          </div>
+        `)
+        .join('');
+    });
+  </script>
 </body>
 </html>
