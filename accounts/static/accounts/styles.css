@@ -1052,3 +1052,10 @@ body {
         transform: translateY(0);
     }
 }
+#login-role {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    position: relative;
+    z-index: 5;
+}

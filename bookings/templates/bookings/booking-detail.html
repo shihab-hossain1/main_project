@@ -93,6 +93,29 @@
 
       <div class="detail-actions">
         <!-- Details page already shows everything. This button simulates report download. -->
+              <h2 class="section-title" style="margin-top:1.5rem;">Reports</h2>
+      {% if booking.reports.all %}
+        {% if booking.reports.count %}
+          {% for r in booking.reports.all %}
+            <div class="detail-row">
+              <span class="detail-label">
+                {{ r.uploaded_at|date:"d M Y, H:i" }}
+              </span>
+              <span class="detail-value">
+                {% if r.notes %}{{ r.notes }} • {% endif %}
+                <a class="btn btn-outline" href="{{ r.file.url }}" target="_blank">
+                  View / Download
+                </a>
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="section-description">
+            No reports have been uploaded yet for this booking.
+          </p>
+        {% endif %}
+      {% endif %}
+
 <a class="btn btn-primary"
    href="{% static 'bookings/WM17S.pdf' %}"
    target="_blank">

@@ -29,7 +29,7 @@
       <div class="nav-content">
         <div class="logo"><div class="logo-icon">💊</div><span class="logo-text">DiagnoCare</span></div>
         <div class="nav-cta">
-          <a class="btn btn-outline" href="index-vanilla.html">Home</a>
+          <a class="btn btn-outline" href="{% url 'home' %}">Home</a>
           <!--<button id="logoutCenter" class="btn btn-primary">Logout</button>-->
           
         <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
@@ -42,132 +42,145 @@
   </nav>
 
   <main class="container dash-wrap">
-    <div class="dash-header">
-      <div>
-  <div class="dash-title">Center Dashboard</div>
-  <p class="section-description">
-    Welcome, {{ request.user.username }} — {{ profile.center_name }}
-  </p>
-</div>
-
-      <div class="dash-actions">
-        <a class="btn btn-primary" href="#">Create Order</a>
-        <a class="btn btn-outline" href="#">Schedule Collection</a>
-        <a class="btn btn-outline" href="#">Upload Report</a>
-      </div>
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">Center Dashboard</div>
+      <p class="section-description">
+        Welcome, {{ request.user.username }} — {{ profile.center_name }}
+      </p>
     </div>
-<section class="section">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-    <h2 class="section-title">Orders</h2>
-
-    <!-- FILTER BUTTONS -->
     <div class="dash-actions">
-      <button type="button" class="btn btn-outline filter-btn" data-filter="all">All</button>
-      <button type="button" class="btn btn-outline filter-btn" data-filter="today">Today</button>
-      <button type="button" class="btn btn-outline filter-btn" data-filter="pending">Pending</button>
-      <button type="button" class="btn btn-outline filter-btn" data-filter="completed">Completed</button>
+      <!-- Create Order is optional, see explanation in STEP 6 -->
+      <!-- <a class="btn btn-primary" href="#">Create Order</a> -->
+      <a class="btn btn-outline" href="">Schedule Collection</a>
+      <button type="button" class="btn btn-outline" id="header-upload-trigger">
+        Upload Report
+      </button>
     </div>
   </div>
 
-  <div id="centerOrdersList" class="list"></div>
-</section>
+  <!-- KPI Cards -->
+  <section class="cards">
+    <div class="card">
+      <h3>Today’s Bookings</h3>
+      <div class="metric">{{ today_count }}</div>
+      <p class="test-description">Bookings scheduled for today</p>
+    </div>
 
-<!-- hidden input for PDF uploads -->
-<input type="file" id="reportUpload" accept="application/pdf" style="display:none">
+    <div class="card">
+      <h3>Total Bookings</h3>
+      <div class="metric">{{ total_count }}</div>
+      <p class="test-description">All bookings for {{ profile.center_name }}</p>
+    </div>
 
-    <section class="cards">
-  <div class="card">
-    <h3>Today’s Bookings</h3>
-    <div class="metric">{{ today_count }}</div>
-    <p class="test-description">Bookings scheduled for today</p>
-  </div>
+    <div class="card">
+      <h3>Home / Center</h3>
+      <div class="metric">{{ home_count }}/{{ center_count }}</div>
+      <p class="test-description">Home collection vs at center</p>
+    </div>
 
-  <div class="card">
-    <h3>Total Bookings</h3>
-    <div class="metric">{{ total_count }}</div>
-    <p class="test-description">All bookings for {{ profile.center_name }}</p>
-  </div>
+    <!-- NEW: Pending / Completed card -->
+    <div class="card">
+      <h3>Pending / Completed</h3>
+      <div class="metric">
+        <span id="pendingCount">0</span> /
+        <span id="completedCount">0</span>
+      </div>
+      <p class="test-description">Based on current order status</p>
+    </div>
+  </section>
 
-  <div class="card">
-    <h3>Home / Center</h3>
-    <div class="metric">{{ home_count }}/{{ center_count }}</div>
-    <p class="test-description">Home collection vs at center</p>
-  </div>
-</section>
-
-
+  <!-- FILTER BUTTONS (All / Today / Pending / Completed) -->
   <section class="section">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+    <h2 class="section-title">Filters</h2>
+    <div class="btn-group">
+      <button class="btn btn-outline btn-primary" data-filter="all">All</button>
+      <button class="btn btn-outline" data-filter="today">Today</button>
+      <button class="btn btn-outline" data-filter="pending">Pending</button>
+      <button class="btn btn-outline" data-filter="completed">Completed</button>
+    </div>
+  </section>
+
+    <!-- HOME COLLECTION LIST -->
+  <section class="section">
+    <h2 class="section-title">Home Collection — Patient Details</h2>
+
+    {% if home_bookings %}
+      <div class="list">
+        {% for b in home_bookings %}
+          <div class="list-item">
+            <div>
+              <strong>{{ b.test }}</strong> — #BK-{{ b.id }}<br>
+              {{ b.date }} {{ b.time }}
+            </div>
+
+            <div>
+              <strong>{{ b.name }}</strong><br>
+              Phone: {{ b.phone }}<br>
+              Address:
+              {{ b.address|default:"" }},
+              {{ b.city|default:"" }}
+              {{ b.postcode|default:"" }}
+            </div>
+
+            <div class="list-actions">
+              <a class="btn btn-outline" href="{% url 'booking-detail' b.id %}">
+                View Full Details
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="section-description">
+        No home collection bookings for this center.
+      </p>
+    {% endif %}
+  </section>
+
+
+  <!-- ALL ORDERS LIST -->
+  <section class="section">
     <h2 class="section-title">All Orders</h2>
 
-    <!-- FILTER BUTTONS -->
-    <div class="dash-actions">
-      <button type="button" class="btn btn-outline" data-filter="all">All</button>
-      <button type="button" class="btn btn-outline" data-filter="today">Today</button>
-      <button type="button" class="btn btn-outline" data-filter="pending">Pending</button>
-      <button type="button" class="btn btn-outline" data-filter="completed">Completed</button>
-    </div>
-  </div>
-
-  {% if bookings %}
-    <div class="list">
-      {% for b in bookings %}
-        <div class="list-item"
-             data-booking-id="{{ b.id }}"
-             data-booking-date="{{ b.date }}"
-             data-patient-name="{{ b.name }}"
-             data-test-name="{{ b.test }}">
-          <!-- LEFT SIDE: info + contact -->
-          <div>
+    {% if bookings_all %}
+      <div class="list" id="centerOrdersList">
+        {% for b in bookings_all %}
+          <div class="list-item"
+               data-booking-id="{{ b.id }}"
+               data-patient-name="{{ b.name }}"
+               data-test-name="{{ b.test }}"
+               data-booking-date="{{ b.date|date:'Y-m-d' }}">
             <div>
-              #BK-{{ b.id }} — {{ b.test }} —
-              <strong>{{ b.name }}</strong>
+              <strong>{{ b.test }}</strong> — #BK-{{ b.id }}<br>
+              {{ b.name }} • {{ b.date }} {{ b.time }}
             </div>
-            <div style="font-size:0.8rem;color:var(--muted-foreground);margin-top:4px;">
-              {{ b.date }} {{ b.time }}
-              {% if b.type == 'home' %}
-                • Home Collection
-              {% else %}
-                • At Center
-              {% endif %}
 
-              {% if b.phone %}
-                • 📞 <a href="tel:{{ b.phone }}">{{ b.phone }}</a>
-              {% endif %}
-              {% if b.email %}
-                • ✉️ <a href="mailto:{{ b.email }}">{{ b.email }}</a>
-              {% endif %}
+            <div class="list-actions">
+              <span class="pill status-pill">Collection</span>
+              <select class="status-select">
+                <option value="collection">Collection</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+              </select>
+              <a class="btn btn-outline"
+              href="{% url 'upload-report' b.id %}">
+              Reports
+            </a>
+
             </div>
           </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="section-description">No bookings found for this center.</p>
+    {% endif %}
+  </section>
 
-          <!-- RIGHT SIDE: status + upload -->
-          <div style="display:flex;align-items:center;gap:0.5rem;">
-            <!-- pill shows current status text -->
-            <span class="pill status-pill" data-status="collection">Collection</span>
+  <!-- Hidden file input used by JS for all uploads -->
+  <input type="file" id="reportUpload" accept="application/pdf" style="display:none">
+</main>
 
-            <!-- dropdown to change status -->
-            <select class="status-select">
-              <option value="collection">Collection</option>
-              <option value="processing">Processing</option>
-              <option value="completed">Completed</option>
-            </select>
-
-            <!-- upload multiple reports -->
-            <button type="button"
-                    class="btn btn-outline upload-report-btn">
-              Upload Report
-            </button>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="section-description">No bookings found for this center.</p>
-  {% endif %}
-</section>
-
-<!-- hidden input for PDF uploads -->
-<input type="file" id="reportUpload" accept="application/pdf" style="display:none">
 
 
   </main>

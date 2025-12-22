@@ -1,9 +1,7 @@
-// Run everything only after DOM is ready
+// =============================
+// TAB SWITCHING  (Login page)
+// =============================
 document.addEventListener('DOMContentLoaded', () => {
-
-  // =============================
-  // TAB SWITCHING (login / signup)
-  // =============================
   const tabTriggers = document.querySelectorAll('.tab-trigger');
   const tabContents = document.querySelectorAll('.tab-content');
 
@@ -20,68 +18,105 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target) target.classList.add('active');
       });
     });
+
+    // Activate tab from URL hash if present (e.g. #signup)
+    const initialHash = location.hash.replace('#', '');
+    if (initialHash) {
+      const trigger = document.querySelector(
+        `.tab-trigger[data-tab="${initialHash}"]`
+      );
+      if (trigger) trigger.click();
+    }
   }
 
-  // =============================
-  // ROLE SELECTOR (Patient / Center / Admin)
-  // =============================
-  const roleCards = document.querySelectorAll('.role-card');
-  const roleHidden = document.getElementById('login-role');
 
-  if (roleCards.length && roleHidden) {
-    // Pre-select saved role if exists
-    const savedRole = localStorage.getItem('diagnocare_role');
-    if (savedRole) {
-      roleHidden.value = savedRole;
-      roleCards.forEach(c => {
-        const active = c.dataset.role === savedRole;
-        c.classList.toggle('selected', active);
-        c.setAttribute('aria-pressed', String(active));
-      });
-    }
 
-    roleCards.forEach(card => {
-      card.addEventListener('click', () => {
-        // Remove selection from all
-        roleCards.forEach(c => {
-          c.classList.remove('selected');
-          c.setAttribute('aria-pressed', 'false');
-        });
+// ROLE SELECTOR (LOGIN PAGE)
+// =============================
+// ROLE SELECTOR (LOGIN PAGE)
+// =============================
+const roleCards = document.querySelectorAll('.role-card');
+const roleInput = document.getElementById('login-role');
 
-        // Activate clicked one
-        card.classList.add('selected');
-        card.setAttribute('aria-pressed', 'true');
-
-        // Set hidden input value
-        const selectedRole = card.dataset.role;
-        roleHidden.value = selectedRole;
-
-        // Remember selection locally
-        localStorage.setItem('diagnocare_role', selectedRole);
-      });
+if (roleCards.length && roleInput) {
+  // helper to visually select the right card
+  function setActiveCard(role) {
+    const normalized = role.trim().toLowerCase();
+    roleCards.forEach(c => {
+      const active = c.dataset.role === normalized;
+      c.classList.toggle('selected', active);
+      c.setAttribute('aria-pressed', String(active));
     });
   }
 
+  // Pre-select saved role if exists
+  const savedRole = localStorage.getItem('diagnocare_role');
+  if (savedRole) {
+    roleInput.value = savedRole;
+    setActiveCard(savedRole);
+  } else {
+    // default: patient
+    roleInput.value = roleInput.value || 'patient';
+    setActiveCard(roleInput.value);
+  }
+
+  // When user clicks on a card → update textbox + save
+  roleCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const selectedRole = card.dataset.role;
+
+      roleInput.value = selectedRole;
+      setActiveCard(selectedRole);
+      localStorage.setItem('diagnocare_role', selectedRole);
+    });
+  });
+
+  // When user types in the textbox → update cards
+  roleInput.addEventListener('input', () => {
+    const typed = roleInput.value.trim().toLowerCase();
+    setActiveCard(typed);
+    if (['patient', 'center', 'admin'].includes(typed)) {
+      localStorage.setItem('diagnocare_role', typed);
+    }
+  });
+}
+
+
+
+
   // =============================
-  // SIGNUP VALIDATION (LET DJANGO SUBMIT IF OK)
+  // SIGNUP VALIDATION (Login page)
   // =============================
   const signupForm = document.getElementById('signup-form');
 
   if (signupForm) {
     signupForm.addEventListener('submit', function (e) {
-      const fullname = document.getElementById('signup-fullname').value.trim();
-      const username = document.getElementById('signup-username').value.trim();
-      const email    = document.getElementById('signup-email').value.trim();
-      const phone    = document.getElementById('signup-phone').value.trim();
-      const gender   = document.getElementById('signup-gender').value;
-      const dob      = document.getElementById('signup-dob').value;
+      const fullname = document
+        .getElementById('signup-fullname')
+        .value.trim();
+      const username = document
+        .getElementById('signup-username')
+        .value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const phone = document.getElementById('signup-phone').value.trim();
+      const gender = document.getElementById('signup-gender').value;
+      const dob = document.getElementById('signup-dob').value;
       const password = document.getElementById('signup-password').value;
-      const confirm  = document.getElementById('signup-confirm').value;
+      const confirm = document.getElementById('signup-confirm').value;
 
       let hasError = false;
       const phoneRegex = /^01[3-9]\d{8}$/;
 
-      if (!fullname || !username || !email || !phone || !gender || !dob || !password || !confirm) {
+      if (
+        !fullname ||
+        !username ||
+        !email ||
+        !phone ||
+        !gender ||
+        !dob ||
+        !password ||
+        !confirm
+      ) {
         alert('Please fill in all fields.');
         hasError = true;
       } else if (!phoneRegex.test(phone)) {
@@ -93,138 +128,163 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (hasError) {
-        e.preventDefault(); // block submission only if invalid
+        // block submission only if invalid
+        e.preventDefault();
       }
+      // if no error: let Django handle the POST normally
     });
   }
+});
 
-  // =============================
-  // URL HASH TAB ACTIVATOR (#signup)
-  // =============================
-  const initialHash = location.hash.replace('#', '');
-  if (initialHash) {
-    const trigger = document.querySelector(`.tab-trigger[data-tab="${initialHash}"]`);
-    if (trigger) trigger.click();
-  }
-
-  // =============================
-  // CENTER DASHBOARD: STATUS + REPORTS + FILTERS
-  // (runs only on center-dashboard.html where [data-booking-id] exists)
-  // =============================
+// =============================
+// CENTER DASHBOARD: STATUS + REPORTS + FILTERS
+// =============================
+document.addEventListener('DOMContentLoaded', () => {
   const bookingEls = document.querySelectorAll('[data-booking-id]');
-  if (bookingEls.length) {
-    const STATUS_KEY  = 'bookingStatus';
-    const REPORTS_KEY = 'reports';
+  if (!bookingEls.length) return; // not on center dashboard
 
-    let statusMap = {};
-    try {
-      statusMap = JSON.parse(localStorage.getItem(STATUS_KEY) || '{}');
-    } catch {
-      statusMap = {};
-    }
+  const STATUS_KEY  = 'bookingStatus';
+  const REPORTS_KEY = 'reports';
 
-    let reports = [];
-    try {
-      reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    } catch {
-      reports = [];
-    }
+  let statusMap = {};
+  try {
+    statusMap = JSON.parse(localStorage.getItem(STATUS_KEY) || '{}');
+  } catch {
+    statusMap = {};
+  }
 
-    const fileInput = document.getElementById('reportUpload');
-    let currentBookingId = null;
+  let reports = [];
+  try {
+    reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+  } catch {
+    reports = [];
+  }
 
-    function saveStatus() {
-      localStorage.setItem(STATUS_KEY, JSON.stringify(statusMap));
-    }
-    function saveReports() {
-      localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
-    }
+  const fileInput      = document.getElementById('reportUpload');
+  const headerUpload   = document.getElementById('header-upload-trigger');
+  let currentBookingId = null;
 
-    function updatePill(pill, status) {
-      if (!pill) return;
-      pill.dataset.status = status;
-      if (status === 'processing') pill.textContent = 'Processing';
-      else if (status === 'completed') pill.textContent = 'Completed';
-      else pill.textContent = 'Collection';
-    }
+  // header button just opens file picker (no specific booking)
+  if (headerUpload && fileInput) {
+    headerUpload.addEventListener('click', () => fileInput.click());
+  }
 
-    // init each booking row
+  function saveStatus() {
+    localStorage.setItem(STATUS_KEY, JSON.stringify(statusMap));
+  }
+  function saveReports() {
+    localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+  }
+
+  function updatePill(pill, status) {
+    if (!pill) return;
+    pill.dataset.status = status;
+    if (status === 'processing') pill.textContent = 'Processing';
+    else if (status === 'completed') pill.textContent = 'Completed';
+    else pill.textContent = 'Collection';
+  }
+
+  function updateCounters() {
+    let pending = 0;
+    let completed = 0;
+
     bookingEls.forEach(el => {
-      const id           = el.dataset.bookingId;
-      const statusSelect = el.querySelector('.status-select');
-      const statusPill   = el.querySelector('.status-pill');
-      const uploadBtn    = el.querySelector('.upload-report-btn');
-
-      const initialStatus = statusMap[id] || 'collection';
-      if (statusSelect) statusSelect.value = initialStatus;
-      updatePill(statusPill, initialStatus);
-
-      if (statusSelect) {
-        statusSelect.addEventListener('change', () => {
-          const val = statusSelect.value;
-          statusMap[id] = val;
-          updatePill(statusPill, val);
-          saveStatus();
-        });
-      }
-
-      if (uploadBtn && fileInput) {
-        uploadBtn.addEventListener('click', () => {
-          currentBookingId = id;
-          fileInput.click();
-        });
-      }
+      const id = el.dataset.bookingId;
+      const status = statusMap[id] || 'collection';
+      if (status === 'completed') completed++;
+      else pending++;
     });
 
-    if (fileInput) {
-      fileInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (!file || !currentBookingId) return;
+    const p = document.getElementById('pendingCount');
+    const c = document.getElementById('completedCount');
+    if (p) p.textContent = pending;
+    if (c) c.textContent = completed;
+  }
 
-        const url = URL.createObjectURL(file);
-        const row = document.querySelector(`[data-booking-id="${currentBookingId}"]`);
+  // initialize each booking row
+  bookingEls.forEach(el => {
+    const id           = el.dataset.bookingId;
+    const statusSelect = el.querySelector('.status-select');
+    const statusPill   = el.querySelector('.status-pill');
+    const uploadBtn    = el.querySelector('.upload-report-btn');
 
-        const entry = {
-          bookingId:   currentBookingId,
-          patientName: row?.dataset.patientName || '',
-          test:        row?.dataset.testName   || '',
-          date:        row?.dataset.bookingDate || '',
-          pdfUrl:      url,
-          uploadedAt:  new Date().toISOString()
-        };
+    const initialStatus = statusMap[id] || 'collection';
+    if (statusSelect) statusSelect.value = initialStatus;
+    updatePill(statusPill, initialStatus);
 
-        reports.push(entry); // multiple per booking allowed
-        saveReports();
-
-        alert('✅ Report uploaded for booking #' + currentBookingId);
-        e.target.value = '';
+    if (statusSelect) {
+      statusSelect.addEventListener('change', () => {
+        const val = statusSelect.value;
+        statusMap[id] = val;
+        updatePill(statusPill, val);
+        saveStatus();
+        updateCounters();
       });
     }
 
-    const filterButtons = document.querySelectorAll('[data-filter]');
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    function applyFilter(mode) {
-      bookingEls.forEach(el => {
-        const id     = el.dataset.bookingId;
-        const date   = el.dataset.bookingDate;
-        const status = statusMap[id] || 'collection';
-        let show = true;
-
-        if (mode === 'today') {
-          show = date === todayStr;
-        } else if (mode === 'pending') {
-          show = status !== 'completed';
-        } else if (mode === 'completed') {
-          show = status === 'completed';
-        } else {
-          show = true;
-        }
-
-        el.style.display = show ? 'flex' : 'none';
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', () => {
+        currentBookingId = id;
+        fileInput.click();
       });
     }
+  });
 
+  // handle actual file selection
+  if (fileInput) {
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      let row = null;
+
+      if (currentBookingId) {
+        row = document.querySelector(`[data-booking-id="${currentBookingId}"]`);
+      }
+
+      const entry = {
+        bookingId:   currentBookingId || null,
+        patientName: row?.dataset.patientName || '',
+        test:        row?.dataset.testName   || '',
+        date:        row?.dataset.bookingDate || '',
+        pdfUrl:      url,
+        uploadedAt:  new Date().toISOString()
+      };
+
+      reports.push(entry);
+      saveReports();
+      alert('✅ Report uploaded' + (currentBookingId ? ` for booking #${currentBookingId}` : ''));
+
+      currentBookingId = null;
+      e.target.value = '';
+    });
+  }
+
+  // FILTERS
+  const filterButtons = document.querySelectorAll('[data-filter]');
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  function applyFilter(mode) {
+    bookingEls.forEach(el => {
+      const id     = el.dataset.bookingId;
+      const date   = el.dataset.bookingDate;
+      const status = statusMap[id] || 'collection';
+
+      let show = true;
+      if (mode === 'today') {
+        show = date === todayStr;
+      } else if (mode === 'pending') {
+        show = status !== 'completed';
+      } else if (mode === 'completed') {
+        show = status === 'completed';
+      } // 'all' → true
+
+      el.style.display = show ? 'flex' : 'none';
+    });
+  }
+
+  if (filterButtons.length) {
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         filterButtons.forEach(b => b.classList.remove('btn-primary'));
@@ -232,8 +292,18 @@ document.addEventListener('DOMContentLoaded', () => {
         applyFilter(btn.dataset.filter);
       });
     });
-
-    applyFilter('all'); // default
   }
 
-}); // end DOMContentLoaded
+  // initial counts + default filter
+  updateCounters();
+  applyFilter('all');
+});
+  // end center-dashboard IIFE
+
+// =============================
+// ROLE SELECTOR
+// =============================
+// =============================
+// ROLE SELECTOR (LOGIN PAGE)
+
+

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Sign Up - DiagnoCare</title>
+  <meta name="description" content="Login or sign up to DiagnoCare to book lab tests and manage your health records">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Auth Container -->
+  <div class="auth-page">
+    <div class="auth-container">
+      <!-- Back to Home Link -->
+      <a href="index-vanilla.html" class="back-link">
+        <svg class="back-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </a>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <div class="tabs-list">
+          <button class="tab-trigger active" data-tab="login">Login</button>
+          <button class="tab-trigger" data-tab="signup">Sign Up</button>
+        </div>
+
+        <!-- Login Tab Content -->
+        <div class="tab-content active" id="login-tab">
+          <div class="auth-card">
+            <div class="card-header">
+              <h2 class="card-title">Welcome Back</h2>
+              <p class="card-description">Select your category and enter your credentials</p>
+            </div>
+
+            <form id="login-form" class="auth-form">
+              <!-- Role Cards -->
+              <div class="role-cards">
+                <button type="button" class="role-card selected" data-role="patient">
+                  <div class="role-icon patient-icon">🧑‍⚕️</div>
+                  <div class="role-title">Patient</div>
+                  <div class="role-hint">Book tests & view reports</div>
+                </button>
+
+                <button type="button" class="role-card" data-role="center">
+                  <div class="role-icon center-icon">🏥</div>
+                  <div class="role-title">Center</div>
+                  <div class="role-hint">Manage orders & results</div>
+                </button>
+
+                <button type="button" class="role-card" data-role="admin">
+                  <div class="role-icon admin-icon">🛠️</div>
+                  <div class="role-title">Admin</div>
+                  <div class="role-hint">Users, centers, settings</div>
+                </button>
+              </div>
+              <input type="hidden" id="login-role" name="login-role" value="patient">
+
+              <div class="form-group">
+                <label for="login-email" class="form-label">Username</label>
+                <input 
+                  type="text" 
+                  id="login-email" 
+                  class="form-input" 
+                  placeholder="Enter your username"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="login-password" class="form-label">Password</label>
+                <input 
+                  type="password" 
+                  id="login-password" 
+                  class="form-input" 
+                  placeholder="Enter your password"
+                  required
+                >
+              </div>
+
+              <a href="#" class="forgot-password">Forgot password?</a>
+
+              <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Sign Up Tab Content -->
+        <div class="tab-content" id="signup-tab">
+          <div class="auth-card">
+            <div class="card-header">
+              <h2 class="card-title">Create Account</h2>
+              <p class="card-description">Sign up to book tests and manage your health records</p>
+            </div>
+
+            <form id="signup-form" class="auth-form">
+              <div class="form-group">
+                <label for="signup-name" class="form-label">Full Name</label>
+                <input 
+                  type="text" 
+                  id="signup-name" 
+                  class="form-input" 
+                  placeholder="John Doe"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="signup-email" class="form-label">Email</label>
+                <input 
+                  type="email" 
+                  id="signup-email" 
+                  class="form-input" 
+                  placeholder="your.email@example.com"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="signup-password" class="form-label">Password</label>
+                <input 
+                  type="password" 
+                  id="signup-password" 
+                  class="form-input" 
+                  placeholder="Create a strong password"
+                  required
+                >
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Terms Text -->
+        <p class="terms-text">
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>

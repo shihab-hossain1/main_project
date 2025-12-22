@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Report – BK-{{ booking.id }}</title>
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
+  <style>
+    .detail-wrap{padding:2rem 0}
+    .detail-card{max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:var(--shadow-soft)}
+    .detail-row{margin-bottom:.75rem}
+    .detail-label{font-weight:600;color:var(--muted-foreground);}
+    .detail-value{font-weight:500;}
+    .status-msg{margin-top:1rem;font-size:.9rem;}
+    .status-msg.error{color:#b91c1c;}
+    .status-msg.success{color:#15803d;}
+    .report-list{margin-top:1.5rem;}
+    .report-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:10px;padding:.5rem .75rem;margin-bottom:.5rem;}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo">
+          <div class="logo-icon">💊</div>
+          <span class="logo-text">DiagnoCare</span>
+        </div>
+        <div class="nav-cta">
+          <a class="btn btn-outline" href="{% url 'center-dashboard' %}">Center Dashboard</a>
+          <button class="btn btn-outline" onclick="history.back()">Back</button>
+          <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container detail-wrap">
+    <div class="detail-card">
+      <h1 class="page-title">Upload Report for BK-{{ booking.id }}</h1>
+      <p class="section-description">
+        {{ booking.test }} — {{ booking.name }} — {{ booking.date }} {{ booking.time }}
+      </p>
+
+      {% if error %}
+        <p class="status-msg error">{{ error }}</p>
+      {% endif %}
+      {% if success %}
+        <p class="status-msg success">{{ success }}</p>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" style="margin-top:1rem;">
+        {% csrf_token %}
+        <div class="detail-row">
+          <span class="detail-label">Select PDF Report</span>
+          <input type="file" name="file" accept="application/pdf" class="form-input" required>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Notes (optional)</span>
+          <input type="text" name="notes" class="form-input" placeholder="e.g. CBC report, fasting sample">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">
+          Upload Report
+        </button>
+      </form>
+
+      <div class="report-list">
+        <h2 class="section-title">Existing Reports</h2>
+        {% if reports %}
+          {% for r in reports %}
+            <div class="report-item">
+              <span>
+                {{ r.uploaded_at|date:"d M Y, H:i" }}
+                {% if r.notes %} — {{ r.notes }}{% endif %}
+              </span>
+              <a class="btn btn-outline" href="{{ r.file.url }}" target="_blank">
+                View / Download
+              </a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="section-description">No reports uploaded yet for this booking.</p>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</body>
+</html>

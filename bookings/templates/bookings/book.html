@@ -93,11 +93,13 @@
         <label class="full">
           Choose Center
           <select name="center">
-            <option value="Center 1">Epic Health Care</option>
-            <option value="Center 2">Ibne Sina Katalgonj</option>
-            <option value="Center 3">Parkview Hospital</option>
-            <option value="Center 4">Care Point</option>
-          </select>
+  <option value="Epic Health Care">Epic Health Care</option>
+  <option value="Ibne Sina Katalgonj">Ibne Sina Katalgonj</option>
+  <option value="Parkview Hospital">Parkview Hospital</option>
+  <!-- Use EXACT same text as the center profile -->
+  <option value="Care point">Care point</option>
+</select>
+
         </label>
       </div>
 
@@ -202,7 +204,8 @@ function validBDPhone(p){
         };
 
         try {
-  const res = await fetch('http://127.0.0.1:8000/api/bookings/', {
+    const res = await fetch('/bookings/', {
+
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

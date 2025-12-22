@@ -5,10 +5,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from .models import Profile
 from django.utils import timezone
-from bookings.models import Booking
+from bookings.models import Booking, Report
 from django.db.models import Q
-from django.contrib.auth.models import User
-from django.contrib.auth import login
 from django.db import IntegrityError
 import datetime
 
@@ -170,17 +168,23 @@ def patient_dashboard(request):
         else:
             bookings = Booking.objects.none()
 
+        # NEW: fetch reports for these bookings
+        reports = Report.objects.filter(
+            booking__in=bookings
+        ).select_related('booking').order_by('-uploaded_at')
+
         return render(request, 'accounts/patient-dashboard.html', {
             'bookings': bookings,
             'profile': profile,
+            'reports': reports,
         })
+
 
     return HttpResponseForbidden('Not allowed.')
 
 
 
 @login_required
-
 
 @login_required
 def center_dashboard(request):
@@ -194,31 +198,46 @@ def center_dashboard(request):
     if center_name:
         base_qs = Booking.objects.filter(center__iexact=center_name)
     else:
-        # fallback: if no center_name set, show nothing (or all)
         base_qs = Booking.objects.none()
 
     today = timezone.localdate()
 
+    # ---- Existing lists ----
     bookings_today = base_qs.filter(date=today).order_by('time')
     bookings_all   = base_qs.order_by('-date', '-time')
     bookings_upcoming = base_qs.filter(date__gte=today).order_by('date', 'time')
 
-    total_count   = base_qs.count()
-    today_count   = bookings_today.count()
-    upcoming_count = bookings_upcoming.count()
-    home_count    = base_qs.filter(type='home').count()
-    center_count  = base_qs.filter(type='center').count()
+    total_count     = base_qs.count()
+    today_count     = bookings_today.count()
+    upcoming_count  = bookings_upcoming.count()
+    home_count      = base_qs.filter(type='home').count()
+    center_count    = base_qs.filter(type='center').count()
 
+    # ---- NEW: Home collection lists ----
+    home_bookings = base_qs.filter(type='home').order_by('-date', '-time')
+    today_home_bookings = base_qs.filter(type='home', date=today).order_by('time')
+
+    # ---- Pass everything to template ----
     context = {
         'profile': profile,
-        'bookings': bookings_today,      # used in "Today’s Orders" section
+
+        'bookings': bookings_today,      # Today's bookings section
+        'bookings_all': bookings_all,     # All bookings section
+
+        # KPI numbers
         'total_count': total_count,
         'today_count': today_count,
         'upcoming_count': upcoming_count,
         'home_count': home_count,
         'center_count': center_count,
+
+        # NEW context for home collection section
+        'home_bookings': home_bookings,
+        'today_home_bookings': today_home_bookings,
     }
+
     return render(request, 'accounts/center-dashboard.html', context)
+
 
 
 

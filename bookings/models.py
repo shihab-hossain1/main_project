@@ -1,7 +1,5 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
+from django.conf import settings 
 
 class Booking(models.Model):
     COLLECTION_CHOICES = [
@@ -32,3 +30,23 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.name} — {self.test} on {self.date}"
 
+
+
+class Report(models.Model):
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name='reports'
+    )
+    file = models.FileField(upload_to='reports/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    notes = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"Report for BK-{self.booking.id} ({self.booking.test})"

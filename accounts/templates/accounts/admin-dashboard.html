@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Admin Dashboard — DiagnoCare</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="{% static 'accounts/styles.css' %}" />
   <style>
     .dash-wrap{padding:2rem 0}
     .dash-header{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
@@ -26,7 +27,7 @@
       <div class="nav-content">
         <div class="logo"><div class="logo-icon">💊</div><span class="logo-text">DiagnoCare</span></div>
         <div class="nav-cta">
-          <a class="btn btn-outline" href="index-vanilla.html">Home</a>
+          <a class="btn btn-outline" href="home.html">Home</a>
           <!--<button id="logoutAdmin" class="btn btn-primary">Logout</button>-->
           <button onclick="window.location.href='{% url 'logout' %}'" class="btn btn-primary">
   Logout

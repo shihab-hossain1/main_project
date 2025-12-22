@@ -59,63 +59,90 @@
               {% endif %}
 
               <form id="login-form" class="auth-form" method="post" action="{% url 'login' %}">
-                {% csrf_token %}
+  {% csrf_token %}
 
-                <!-- single hidden input used by JS -->
-                <!-- single hidden input used by JS -->
-                <input type="hidden" id="login-role" name="login-role" value="patient">
-                
+  <!-- Role cards (single selector) -->
+
+  <div class="role-cards" role="radiogroup" aria-label="Login category">
+  <button type="button" class="role-card patient-card selected"
+          data-role="patient" aria-pressed="true">
+    <div class="role-icon">🧑‍⚕️</div>
+    <div class="role-title">Patient</div>
+    <div class="role-hint">Book tests & view reports</div>
+  </button>
+
+  <button type="button" class="role-card center-card"
+          data-role="center" aria-pressed="false">
+    <div class="role-icon">🏥</div>
+    <div class="role-title">Center</div>
+    <div class="role-hint">Manage orders & results</div>
+  </button>
+
+  <button type="button" class="role-card admin-card"
+          data-role="admin" aria-pressed="false">
+    <div class="role-icon">🛠️</div>
+    <div class="role-title">Admin</div>
+    <div class="role-hint">Users, centers, settings</div>
+  </button>
+</div>
 
 
-                <!-- Role cards (single selector) -->
-                <div class="role-cards" role="radiogroup" aria-label="Login category">
-                  <button type="button" class="role-card selected patient-card" data-role="patient" aria-pressed="true">
-                    <div class="role-icon">🧑‍⚕️</div>
-                    <div class="role-title">Patient</div>
-                    <div class="role-hint">Book tests & view reports</div>
-                  </button>
+  <!-- single hidden input used by JS + Django 
+  <input type="" id="login-role" name="login-role" value="center">
 
-                  <button type="button" class="role-card center-card" data-role="center" aria-pressed="false">
-                    <div class="role-icon">🏥</div>
-                    <div class="role-title">Center</div>
-                    <div class="role-hint">Manage orders & results</div>
-                  </button>
+  
+  <p class="form-hint">Choose your role to sign in.</p>-->
 
-                  <button type="button" class="role-card admin-card" data-role="admin" aria-pressed="false">
-                    <div class="role-icon">🛠️</div>
-                    <div class="role-title">Admin</div>
-                    <div class="role-hint">Users, centers, settings</div>
-                  </button>
-                </div>
+  <p class="form-hint" style="margin-top:20px;">
+  Choose your role to sign in using the cards, or type it manually below.
+</p>
+<div style="height: 20px; clear: both;"></div>
 
-                <p class="form-hint">Choose your role to sign in.</p>
 
-                <div class="form-group">
-                  <label for="login-email" class="form-label">Username</label>
-                  <input 
-                    type="text" 
-                    id="login-email" 
-                    name="login-email"
-                    class="form-input" 
-                    placeholder="Enter your username"
-                    required
-                  >
-                </div>
+<div class="form-group" style="margin-top:15px; clear:both;">
+  <label for="login-role" class="form-label">
+    Role (patient / center / admin)
+  </label>
+  <input
+    type="text"
+    id="login-role"
+    name="login-role"
+    class="form-input"
+    placeholder="patient, center, or admin"
+    value="patient"
+    required
+  >
+</div>
 
-                <div class="form-group">
-                  <label for="login-password" class="form-label">Password</label>
-                  <input 
-                    type="password" 
-                    id="login-password" 
-                    name="login-password"
-                    class="form-input" 
-                    placeholder="Enter your password"
-                    required
-                  >
-                </div>
 
-                <button type="submit" class="btn btn-primary btn-full">Login</button>
-              </form>
+
+  <div class="form-group">
+    <label for="login-email" class="form-label">Username</label>
+    <input 
+      type="text" 
+      id="login-email" 
+      name="login-email"
+      class="form-input" 
+      placeholder="your username"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="login-password" class="form-label">Password</label>
+    <input 
+      type="password" 
+      id="login-password" 
+      name="login-password"
+      class="form-input" 
+      placeholder="Enter your password"
+      required
+    >
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+</form>
+
             </div>
           </div>
 
